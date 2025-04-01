@@ -1,25 +1,36 @@
 import { StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useState } from "react";
+import Animated, {
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  Easing,
+  runOnJS,
+} from 'react-native-reanimated';
+import { router } from "expo-router";
+
 
 const LoaderComponent = () => {
-  const [loaderWidth, setLoaderWidth] = useState(1);
+  const loaderWidth = useSharedValue(0);
 
   useEffect(() => {
-    console.log(loaderWidth);
-    const interval = setTimeout(() => {
-      if (loaderWidth < 100) {
-        setLoaderWidth(loaderWidth + 1);
-      } else {
-        clearInterval(interval);
-      }
-    }, 100);
-  }, [loaderWidth]);
+    loaderWidth.value = withTiming(100, {
+      duration: 2000,
+      easing: Easing.linear,
+    }, ()=>{
+      runOnJS(router.replace)("/auth/login")
+    });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${loaderWidth.value}%`,
+    };
+  });
 
   return (
     <View style={styles.ribbonParent}>
-      <View
-        style={[styles.ribbonChildren, { width: `${loaderWidth}%` }]}
-      />
+      <Animated.View style={[styles.ribbonChildren, animatedStyle]} />
     </View>
   );
 };
